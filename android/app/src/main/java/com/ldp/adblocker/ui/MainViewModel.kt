@@ -16,6 +16,10 @@ data class MainUiState(
     val closedPopups: Long = 0,
     val updating: Boolean = false,
     val message: String? = null,
+    val rulesVersion: Int = 0,
+    val domainsCount: Int = 0,
+    val popupRulesCount: Int = 0,
+    val lastSyncTime: Long = 0,
 )
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
@@ -27,6 +31,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     init {
         refreshStats()
+        loadRulesInfo()
     }
 
     fun setVpnRunning(running: Boolean) {
@@ -68,6 +73,22 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             )
             _state.value = _state.value.copy(updating = false, message = msg)
             refreshStats()
+            loadRulesInfo()
+        }
+    }
+
+    /** 加载规则版本、数量等信息。 */
+    private fun loadRulesInfo() {
+        viewModelScope.launch {
+            val version = repo.fetchRulesVersion()
+            version?.let { v ->
+                _state.value = _state.value.copy(
+                    rulesVersion = v.rulesVersion,
+                    domainsCount = v.domainsCount,
+                    popupRulesCount = v.popupRulesCount,
+                    lastSyncTime = System.currentTimeMillis()
+                )
+            }
         }
     }
 

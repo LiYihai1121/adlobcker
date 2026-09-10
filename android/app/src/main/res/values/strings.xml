@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">广告屏蔽</string>
     <string name="vpn_channel_name">广告拦截</string>
@@ -10,6 +11,7 @@
     <string name="title_vpn">VPN 网络拦截</string>
     <string name="title_accessibility">弹窗自动关闭</string>
     <string name="title_stats">拦截统计</string>
+    <string name="title_about">关于</string>
     <string name="btn_enable_vpn">开启 VPN 拦截</string>
     <string name="btn_disable_vpn">关闭 VPN 拦截</string>
     <string name="btn_enable_acc">开启弹窗关闭</string>
@@ -22,4 +24,16 @@
     <string name="rules_updated">规则库已更新至最新版本</string>
     <string name="rules_uptodate">规则库已是最新</string>
     <string name="update_failed">规则更新失败，请检查网络</string>
+    <string name="status_running">运行中</string>
+    <string name="status_stopped">已停止</string>
+    <string name="status_disabled">未开启</string>
+    <string name="version_label">版本</string>
+    <string name="last_sync">上次同步：%1$s</string>
+    <string name="never_synced">从未同步</string>
+    <string name="rules_version">规则版本</string>
+    <string name="domains_count">域名数</string>
+    <string name="popups_rules_count">弹窗规则</string>
+    <string name="vpn_description">通过本地 VPN 拦截广告域名的 DNS 解析，屏蔽开屏、信息流、激励视频等广告</string>
+    <string name="accessibility_description">监听窗口变化，自动识别并点击「跳过/关闭/✕」等按钮，关闭弹窗广告</string>
+    <string name="about_text">广告屏蔽 v1.0.0\n基于 VPN + 无障碍服务的组合拦截方案\n\n开源协议：MIT License</string>
 </resources>
