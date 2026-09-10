@@ -1,0 +1,47 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# 后端运行时数据（种子数据由代码初始化生成，不纳入版本库）
+backend/data/*.db
+backend/data/*.db-journal
+backend/data/*.db-wal
+backend/data/*.db-shm
+
+# ===== Android / Gradle =====
+.gradle/
+build/
+app/build/
+.cxx/
+local.properties
+*.iml
+captures/
+.externalNativeBuild/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== 临时日志 =====
+*.log

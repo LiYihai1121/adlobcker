@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">广告屏蔽</string>
+    <string name="vpn_channel_name">广告拦截</string>
+    <string name="vpn_channel_desc">VPN 广告拦截服务运行中</string>
+    <string name="vpn_notification_title">广告屏蔽已开启</string>
+    <string name="vpn_notification_text">正在拦截广告网络请求</string>
+    <string name="acc_notification_title">弹窗自动关闭</string>
+    <string name="acc_notification_text">正在自动关闭广告弹窗</string>
+
+    <string name="title_vpn">VPN 网络拦截</string>
+    <string name="title_accessibility">弹窗自动关闭</string>
+    <string name="title_stats">拦截统计</string>
+    <string name="btn_enable_vpn">开启 VPN 拦截</string>
+    <string name="btn_disable_vpn">关闭 VPN 拦截</string>
+    <string name="btn_enable_acc">开启弹窗关闭</string>
+    <string name="btn_disable_acc">关闭弹窗关闭</string>
+    <string name="btn_update_rules">更新规则库</string>
+    <string name="hint_acc_needed">请先在系统设置中开启无障碍服务</string>
+    <string name="hint_vpn_needed">请授予 VPN 权限</string>
+    <string name="stats_domains">已拦截域名</string>
+    <string name="stats_popups">已关闭弹窗</string>
+    <string name="rules_updated">规则库已更新至最新版本</string>
+    <string name="rules_uptodate">规则库已是最新</string>
+    <string name="update_failed">规则更新失败，请检查网络</string>
+</resources>
