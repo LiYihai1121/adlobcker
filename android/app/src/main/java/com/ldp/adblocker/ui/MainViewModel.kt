@@ -46,6 +46,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** 将本地累计统计上报到后端（尽力而为，失败静默不阻塞主流程）。 */
+    fun flushStats() {
+        viewModelScope.launch {
+            val popups = repo.getPopupsCount()
+            if (popups > 0) {
+                repo.reportStats(interceptedDomains = emptyList(), closedPopups = popups.toInt())
+            }
+        }
+    }
+
     /** 从后端同步规则库。 */
     fun updateRules() {
         viewModelScope.launch {

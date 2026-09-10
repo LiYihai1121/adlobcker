@@ -1,7 +1,8 @@
 """弹窗关闭规则路由（供无障碍服务使用）。"""
 import aiosqlite
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.auth import verify_admin_key
 from app.config import DB_PATH
 from app.models import PopupRule
 
@@ -29,7 +30,7 @@ async def list_popup_rules(enabled_only: bool = True):
         ) for r in items]
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(verify_admin_key)])
 async def upsert_rule(rule: PopupRule):
     """新增/更新一条弹窗规则。"""
     async with aiosqlite.connect(DB_PATH) as db:
@@ -46,7 +47,7 @@ async def upsert_rule(rule: PopupRule):
     return {"ok": True, "id": rule.id}
 
 
-@router.delete("/{rule_id}")
+@router.delete("/{rule_id}", dependencies=[Depends(verify_admin_key)])
 async def delete_rule(rule_id: int):
     """删除一条弹窗规则。"""
     async with aiosqlite.connect(DB_PATH) as db:

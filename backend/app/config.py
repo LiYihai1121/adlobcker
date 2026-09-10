@@ -1,12 +1,8 @@
-"""应用配置。"""
-import os
-from pathlib import Path
+"""应用配置：常量定义 + 对 Settings 的再导出。"""
+from app.settings import settings
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-DB_PATH = os.getenv("ADBLOCK_DB_PATH", str(DATA_DIR / "adblock.db"))
+# 数据库路径（向后兼容：原有模块 `from app.config import DB_PATH`）
+DB_PATH = settings.db_path
 
 # 远程规则源（公开的广告域名拦截列表，调度器定期同步）
 REMOTE_DOMAIN_SOURCES = [

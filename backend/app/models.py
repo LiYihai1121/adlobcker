@@ -32,3 +32,18 @@ class StatsSummary(BaseModel):
     device_id: str
     total_intercepted_domains: int
     total_closed_popups: int
+
+
+class RulesSnapshot(BaseModel):
+    """规则全量快照：一次请求返回版本号 + 域名列表 + 弹窗规则，供客户端整体同步。"""
+    rules_version: int
+    domains: list[DomainItem]
+    popup_rules: list[PopupRule]
+
+
+class StatsOverview(BaseModel):
+    """全局拦截统计聚合（跨所有设备）。"""
+    active_devices: int
+    total_closed_popups: int
+    unique_intercepted_domains: int
+

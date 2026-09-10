@@ -110,8 +110,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // 回到前台时刷新统计与无障碍状态
+        // 回到前台时刷新统计与无障碍状态，并顺带上报一次累计统计
         viewModel.refreshStats()
+        viewModel.flushStats()
     }
 
     /** 检查本应用的无障碍服务是否已启用。 */

@@ -1,7 +1,8 @@
 """广告域名黑名单路由。"""
 import aiosqlite
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.auth import verify_admin_key
 from app.config import DB_PATH
 from app.models import DomainItem
 
@@ -23,7 +24,7 @@ async def list_domains(enabled_only: bool = True):
                            enabled=bool(r["enabled"])) for r in items]
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(verify_admin_key)])
 async def add_domain(item: DomainItem):
     """新增/更新一个广告域名（管理用）。"""
     from app.config import DB_PATH
@@ -37,7 +38,7 @@ async def add_domain(item: DomainItem):
     return {"ok": True, "domain": item.domain}
 
 
-@router.delete("/{domain}")
+@router.delete("/{domain}", dependencies=[Depends(verify_admin_key)])
 async def delete_domain(domain: str):
     """删除一个广告域名。"""
     from app.config import DB_PATH

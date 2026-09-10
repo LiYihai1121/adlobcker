@@ -1,0 +1,14 @@
+services:
+  adblocker-backend:
+    build: .
+    container_name: adblocker-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data        # SQLite 持久化
+      - ./.env:/app/.env:ro     # 可选：环境变量配置
+    environment:
+      - SYNC_INTERVAL_HOURS=6
+      - CORS_ORIGINS=["*"]
+      - SYNC_ON_STARTUP=true
+    restart: unless-stopped

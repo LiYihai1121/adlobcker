@@ -3,8 +3,10 @@ import aiosqlite
 
 from app.config import DB_PATH, BUILTIN_AD_DOMAINS, BUILTIN_POPUP_RULES
 
-# 全局规则版本（每次更新规则时自增）
-RULES_VERSION = 1
+# meta 表中规则版本号的键
+RULES_VERSION_KEY = "rules_version"
+# 初始规则版本（仅在 meta 无记录时使用）
+INITIAL_RULES_VERSION = 1
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS ad_domains (
@@ -44,11 +46,11 @@ async def init_db() -> None:
     async with aiosqlite.connect(DB_PATH) as db:
         await db.executescript(SCHEMA)
 
-        # 写入当前规则版本
+        # 写入初始规则版本（若已存在则保留，不覆盖）
         await db.execute(
-            "INSERT INTO meta(key, value) VALUES('rules_version', ?) "
-            "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
-            (str(RULES_VERSION),),
+            "INSERT INTO meta(key, value) VALUES(?, ?) "
+            "ON CONFLICT(key) DO NOTHING",
+            (RULES_VERSION_KEY, str(INITIAL_RULES_VERSION)),
         )
 
         # 种子广告域名
@@ -70,6 +72,28 @@ async def init_db() -> None:
         await db.commit()
 
 
+async def get_rules_version() -> int:
+    """读取当前规则版本号（从 meta 表）。"""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        row = await (await db.execute(
+            "SELECT value FROM meta WHERE key=?", (RULES_VERSION_KEY,)
+        )).fetchone()
+        return int(row["value"]) if row else INITIAL_RULES_VERSION
+
+
+async def bump_rules_version() -> int:
+    """规则版本号 +1 并返回新值，供远程同步后调用。"""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO meta(key, value) VALUES(?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value=CAST(value AS INTEGER)+1",
+            (RULES_VERSION_KEY, str(INITIAL_RULES_VERSION)),
+        )
+        await db.commit()
+        return await get_rules_version()
+
+
 def _guess_platform(domain: str) -> str:
     if any(k in domain for k in ("pangolin", "snssdk", "oceanengine", "tiktok", "toutiao")):
         return "穿山甲"
@@ -87,3 +111,4 @@ async def get_db() -> aiosqlite.Connection:
     db = await aiosqlite.connect(DB_PATH)
     db.row_factory = aiosqlite.Row
     return db
+

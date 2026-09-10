@@ -5,19 +5,20 @@ import httpx
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.config import REMOTE_DOMAIN_SOURCES, BUILTIN_AD_DOMAINS
-from app.database import _guess_platform
+from app.database import _guess_platform, bump_rules_version
+from app.settings import settings
 
 logger = logging.getLogger("adblock.scheduler")
 scheduler = AsyncIOScheduler()
 
 
 async def sync_remote_domains() -> None:
-    """从远程源拉取域名并写入数据库（去重合并）。"""
+    """从远程源拉取域名并写入数据库（去重合并），完成后自增规则版本号。"""
     import aiosqlite
     from app.config import DB_PATH
 
     new_domains: set[str] = set(BUILTIN_AD_DOMAINS)
-    async with httpx.AsyncClient(timeout=15) as client:
+    async with httpx.AsyncClient(timeout=15, trust_env=False) as client:
         for url in REMOTE_DOMAIN_SOURCES:
             try:
                 resp = await client.get(url)
@@ -46,17 +47,25 @@ async def sync_remote_domains() -> None:
             )
             inserted += cur.rowcount
         await db.commit()
-    logger.info("远程同步完成，新增 %d 条域名，共计 %d 条", inserted, len(new_domains))
+
+    # 仅有新增/变化时才提升版本号，避免客户端无意义增量更新
+    if inserted > 0:
+        new_ver = await bump_rules_version()
+        logger.info("远程同步完成，新增 %d 条域名，规则版本升至 %d", inserted, new_ver)
+    else:
+        logger.info("远程同步完成，无新增域名")
 
 
 def start_scheduler() -> None:
-    """注册并启动定时任务（每 6 小时同步一次）。"""
-    scheduler.add_job(sync_remote_domains, "interval", hours=6,
+    """注册并启动定时任务。"""
+    interval = settings.sync_interval_hours
+    scheduler.add_job(sync_remote_domains, "interval", hours=interval,
                       id="sync_domains", replace_existing=True, max_instances=1)
     scheduler.start()
-    logger.info("定时任务调度器已启动（每6小时同步一次远程规则）")
+    logger.info("定时任务调度器已启动（每 %d 小时同步一次远程规则）", interval)
 
 
 async def stop_scheduler() -> None:
     if scheduler.running:
         scheduler.shutdown(wait=False)
+

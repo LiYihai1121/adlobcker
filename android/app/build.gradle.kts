@@ -31,6 +31,7 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { viewBinding = true }
+    testOptions { unitTests { isReturnDefaultValues = true } }
 }
 
 dependencies {
@@ -56,4 +57,7 @@ dependencies {
 
     // 协程
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // 单元测试
+    testImplementation("junit:junit:4.13.2")
 }

@@ -86,7 +86,15 @@ class VpnAdBlockService : VpnService() {
                 if (n <= 0) continue
                 when (val result = PacketHandler.inspect(packet, n, filter)) {
                     is PacketHandler.Result.Blocked -> {
-                        // 丢弃该 DNS 查询（不写回），广告域名解析失败
+                        // 构造 0.0.0.0 伪造应答写回 tun，使广告域名立即解析失败
+                        val response = PacketHandler.buildBlockedDnsResponse(packet, n)
+                        if (response != null) {
+                            try {
+                                output.write(response)
+                            } catch (e: Exception) {
+                                Log.w(TAG, "写回拦截应答失败", e)
+                            }
+                        }
                         Log.d(TAG, "拦截广告域名: ${result.domain}")
                         scope.launch {
                             repo.incrementDomainsCount(1)

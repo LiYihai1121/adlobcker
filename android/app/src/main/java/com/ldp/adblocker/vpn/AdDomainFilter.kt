@@ -11,7 +11,7 @@ import kotlinx.coroutines.runBlocking
  *
  * 域名以小写、去点比较；匹配逻辑为「被查询域名以黑名单某条目结尾」即命中。
  */
-class AdDomainFilter private constructor(
+class AdDomainFilter internal constructor(
     private val blockedSuffixes: HashSet<String>,
 ) {
     /** 是否命中黑名单。host 可带点，大小写不敏感。 */
