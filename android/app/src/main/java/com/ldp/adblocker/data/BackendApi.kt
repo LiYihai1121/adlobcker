@@ -1,5 +1,6 @@
 package com.ldp.adblocker.data
 
+import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import retrofit2.Response
 import retrofit2.Retrofit

@@ -1,5 +1,8 @@
 # 复制为 local.properties 并填写本机路径（该文件已被 .gitignore 忽略）
 # SDK 版本需 >= build.gradle.kts 中的 compileSdk(34)
+#
+# 注意：sdk.dir 建议用「正斜杠」书写。.properties 会把单个反斜杠当作转义符吃掉，
+# 写成 C:\Users\... 会被解析成 C:Users...（分隔符丢失）导致 SDK location not found。
 
 # Android SDK 路径
-sdk.dir=C\:\\Users\\<your-user>\\AppData\\Local\\Android\\Sdk
+sdk.dir=C:/Users/<your-user>/AppData/Local/Android/Sdk

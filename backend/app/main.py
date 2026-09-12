@@ -2,13 +2,19 @@
 import logging
 
 from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.database import init_db
 from app.scheduler import start_scheduler, stop_scheduler, sync_remote_domains
 from app.settings import settings
 from app.routers import domains, popup_rules, rules, stats
+
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
@@ -48,10 +54,14 @@ app.include_router(popup_rules.router)
 app.include_router(rules.router)
 app.include_router(stats.router)
 
+# 静态资源：控制台页面引用的 style.css / app.js 等
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-@app.get("/", tags=["health"])
+
+@app.get("/", tags=["health"], include_in_schema=False)
 async def root():
-    return {"service": "AdBlocker Backend", "status": "ok"}
+    """浏览器控制台首页。"""
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.get("/health", tags=["health"])

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="adblocker">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AdBlocker 后端规则库实时预览控制台" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A1%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+  <title>AdBlocker 控制台</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="min-h-screen bg-base-200 text-base-content">
+  <header class="navbar bg-base-100/80 backdrop-blur shadow sticky top-0 z-10 px-4 md:px-6">
+    <div class="flex-1">
+      <h1 class="text-xl font-bold flex items-center gap-2">🛡️ 广告屏蔽控制台</h1>
+      <span class="text-xs text-base-content/60 ml-1 hidden sm:inline">规则库实时预览</span>
+    </div>
+    <div class="flex-none flex items-center gap-2 md:gap-3">
+      <span class="text-xs text-base-content/60" id="updated" aria-live="polite"></span>
+      <button id="refresh" type="button" class="btn btn-primary btn-sm gap-1">⟳ 刷新</button>
+      <div class="badge badge-outline gap-2 py-3" role="status">
+        <span id="dot" class="inline-block w-2.5 h-2.5 rounded-full bg-warning"></span>
+        <span id="health">检测中…</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="p-4 md:p-6 max-w-7xl mx-auto space-y-4">
+    <div id="error" class="alert alert-error hidden"></div>
+
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-label="概览统计">
+      <div class="stats bg-base-100 shadow">
+        <div class="stat">
+          <div class="stat-title">规则版本</div>
+          <div class="stat-value text-primary" id="ver">—</div>
+        </div>
+      </div>
+      <div class="stats bg-base-100 shadow">
+        <div class="stat">
+          <div class="stat-title">广告域名</div>
+          <div class="stat-value" id="dom">—</div>
+        </div>
+      </div>
+      <div class="stats bg-base-100 shadow">
+        <div class="stat">
+          <div class="stat-title">弹窗规则</div>
+          <div class="stat-value" id="pop">—</div>
+        </div>
+      </div>
+      <div class="stats bg-base-100 shadow">
+        <div class="stat">
+          <div class="stat-title">活跃设备 / 拦截 / 关弹窗</div>
+          <div class="stat-value text-secondary" id="stat">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-base">弹窗自动关闭规则</h2>
+          <div class="overflow-x-auto">
+            <table class="table table-zebra table-sm">
+              <thead>
+                <tr><th>ID</th><th>包名</th><th>按钮文案</th><th>ViewId</th></tr>
+              </thead>
+              <tbody id="rules"></tbody>
+            </table>
+          </div>
+          <p class="text-xs text-base-content/60 mt-2">客户端无障碍服务按这些正则点击「跳过 / 关闭」按钮。</p>
+        </div>
+      </div>
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-base">广告域名黑名单</h2>
+          <input id="q" type="search" class="input input-bordered input-sm w-full mb-2"
+                 placeholder="搜索域名或平台，例如 pangolin / 穿山甲"
+                 aria-label="搜索域名或平台" />
+          <div class="overflow-x-auto">
+            <table class="table table-zebra table-sm">
+              <thead>
+                <tr><th>域名</th><th>平台</th></tr>
+              </thead>
+              <tbody id="domains"></tbody>
+            </table>
+          </div>
+          <p class="text-xs text-base-content/60 mt-2" id="shown"></p>
+        </div>
+      </div>
+    </section>
+
+    <p class="text-xs text-base-content/60">
+      接口文档：<a class="link link-hover" href="/docs">/docs</a> ·
+      健康检查：<a class="link link-hover" href="/health">/health</a> · 每 30 秒自动刷新
+    </p>
+  </main>
+
+  <noscript><p class="p-6">此页面需要启用 JavaScript 才能加载实时数据。</p></noscript>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

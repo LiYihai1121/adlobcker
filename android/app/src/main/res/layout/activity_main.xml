@@ -472,17 +472,17 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnUpdateRules"
-                style="@style/Widget.Material3.Button.Filled.Tonal"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:icon="@drawable/ic_refresh"
-                android:iconGravity="start"
+                app:iconGravity="textStart"
                 android:text="@string/btn_update_rules"
                 android:enabled="true" />
 
-            <androidx.appcompat.widget.AppCompatProgressBar
+            <ProgressBar
                 android:id="@+id/progressUpdateRules"
-                style="@style/Widget.Material3.ProgressBar.Horizontal"
+                style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
                 android:layout_marginTop="12dp"

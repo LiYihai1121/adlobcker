@@ -91,8 +91,8 @@ class PacketHandlerTest {
         // 仍是 IPv4 数据报
         assertEquals(4, (r[0].toInt() ushr 4) and 0x0F)
         // DNS 应答标志：QR=1（flags 高字节 bit7=1，即 0x81）
-        // DNS 偏移 = ihl(20) + 8 = 28
-        assertEquals(0x81.toByte(), r[28])
+        // DNS 偏移 = ihl(20) + 8(UDP) = 28；DNS 内 flags 前还有 2 字节 ID → r[30]
+        assertEquals(0x81.toByte(), r[30])
     }
 
     @Test

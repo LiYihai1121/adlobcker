@@ -18,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.ldp.adblocker.accessibility.PopupAccessibilityService
 import com.ldp.adblocker.databinding.ActivityMainBinding
+import com.ldp.adblocker.ui.MainUiState
 import com.ldp.adblocker.ui.MainViewModel
 import com.ldp.adblocker.vpn.VpnAdBlockService
 import kotlinx.coroutines.launch
@@ -102,29 +103,29 @@ class MainActivity : AppCompatActivity() {
         viewModel.flushStats()
     }
 
-    private fun updateVpnUI(state: MainViewModel.MainUiState) {
+    private fun updateVpnUI(state: MainUiState) {
         val running = state.vpnRunning
-        binding.tvVpnStatus.text = if (running) R.string.status_running else R.string.status_stopped
+        binding.tvVpnStatus.setText(if (running) R.string.status_running else R.string.status_stopped)
         binding.tvVpnStatus.setTextColor(ContextCompat.getColor(this, if (running) R.color.green_status else R.color.gray_status))
         binding.vpnStatusDot.background = ContextCompat.getDrawable(this, if (running) R.drawable.status_dot_green else R.drawable.status_dot_gray)
         binding.btnToggleVpn.isChecked = running
     }
 
-    private fun updateAccessibilityUI(state: MainViewModel.MainUiState) {
+    private fun updateAccessibilityUI(state: MainUiState) {
         val accOn = isAccessibilityEnabled()
         viewModel.setAccessibilityEnabled(accOn)
-        binding.tvAccStatus.text = if (accOn) R.string.status_running else R.string.status_stopped
+        binding.tvAccStatus.setText(if (accOn) R.string.status_running else R.string.status_stopped)
         binding.tvAccStatus.setTextColor(ContextCompat.getColor(this, if (accOn) R.color.green_status else R.color.gray_status))
         binding.accStatusDot.background = ContextCompat.getDrawable(this, if (accOn) R.drawable.status_dot_green else R.drawable.status_dot_gray)
         binding.btnToggleAcc.isChecked = accOn
     }
 
-    private fun updateStatsUI(state: MainViewModel.MainUiState) {
+    private fun updateStatsUI(state: MainUiState) {
         binding.tvDomainsCount.text = state.interceptedDomains.toString()
         binding.tvPopupsCount.text = state.closedPopups.toString()
     }
 
-    private fun updateRulesInfoUI(state: MainViewModel.MainUiState) {
+    private fun updateRulesInfoUI(state: MainUiState) {
         binding.tvRulesVersion.text = state.rulesVersion.toString()
         binding.tvDomainsCountInfo.text = state.domainsCount.toString()
         binding.tvPopupRulesCount.text = state.popupRulesCount.toString()

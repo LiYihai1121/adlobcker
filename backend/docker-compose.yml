@@ -1,14 +1,27 @@
 services:
   adblocker-backend:
     build: .
+    image: adblocker-backend:latest
     container_name: adblocker-backend
     ports:
       - "8000:8000"
     volumes:
       - ./data:/app/data        # SQLite 持久化
-      - ./.env:/app/.env:ro     # 可选：环境变量配置
+    # 不再挂载 .env 文件：缺失的宿主机 .env 会被 Docker 当目录创建从而破坏启动。
+    # 改用下方 environment 显式注入 + settings.py 默认值；如需更多变量用 env_file。
+    env_file:
+      - path: .env              # 可选：存在则加载，不存在 compose 会忽略（path 语法需 compose v2.24+）
+        required: false
     environment:
       - SYNC_INTERVAL_HOURS=6
       - CORS_ORIGINS=["*"]
       - SYNC_ON_STARTUP=true
+      # 生产环境务必设置：- ADBLOCK_ADMIN_KEY=change-me
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=5).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
