@@ -111,11 +111,18 @@ cd android
 ```
 
 ## 部署（Docker）
+## 部署（Docker）
+
+`Dockerfile` 为**多阶段构建**：先用 `node:20` 编译前端（TypeScript→app.js、Tailwind→style.css），再装入 `python:3.11` 运行时，因此**全新克隆后直接构建即可获得完整控制台**，无需本地预装 Node。
+
 ```bash
 cd backend
 cp .env.example .env          # 按需修改（务必设置 ADBLOCK_ADMIN_KEY）
-docker compose up -d --build  # http://localhost:8000/docs
+docker compose up -d --build  # http://localhost:8000  （/docs 接口文档）
 ```
+
+> `docker-compose.yml` 不再挂载 `.env` 文件（缺失会被 Docker 当目录创建而破坏启动），改用 `env_file`（可选）+ `environment` 显式注入；并内置 `healthcheck` 探测 `/health`。
+
 
 ## 环境变量
 | 变量 | 默认 | 说明 |
@@ -127,7 +134,10 @@ docker compose up -d --build  # http://localhost:8000/docs
 | `ADBLOCK_ADMIN_KEY` | （空） | 管理写接口密钥，生产务必设置 |
 
 ## 项目状态
-- ✅ 后端：配置层(CORS/Settings/.env)、规则版本动态自增、snapshot/overview/admin 鉴权、Docker、10 个 pytest 全部通过
+- ✅ 后端：配置层(CORS/Settings/.env)、规则版本动态自增、snapshot/overview/admin 鉴权、Docker 多阶段构建(含前端)、10 个 pytest 全部通过
+- ✅ 前端：TypeScript+Tailwind/DaisyUI 控制台，源码与构建产物均已纳入版本库；CI 校验 `npm run build`
+- ✅ 数据库：SQLite，种子数据由代码初始化，`backend/data/` 目录随仓库占位存在
+- ✅ 部署：`docker compose up -d --build` 全新克隆即可一键拉起（含控制台 + healthcheck）
 - ✅ Android：DNS 伪造 `0.0.0.0` 应答、网络安全配置、单元测试（PacketHandler/AdDomainFilter/PopupRuleMatcher）
-- ⚠️ Android 编译需在装有 Android SDK/JDK 的机器上经 Gradle Sync 验证（本机仅 Python 3.14）
+- ⚠️ Android 编译需在装有 Android SDK/JDK 的机器上经 Gradle Sync 验证
 - 🔜 后续：真机 HTTPS 后端部署、按 APP 维度弹窗规则管理后台、扩充广告域名种子库

@@ -16,7 +16,13 @@ pip install -r requirements.txt
 python run.py                   # 或 uvicorn app.main:app --reload
 ```
 
-服务默认监听 `http://0.0.0.0:8000`，接口文档见 `/docs`。
+服务默认监听 `http://0.0.0.0:8000`，接口文档见 `/docs`，浏览器控制台见 `/`。
+
+## 前端控制台
+
+控制台源码在 `frontend/`（TypeScript + Tailwind/DaisyUI），构建产物落到 `app/static/`。
+- 本地开发：`cd frontend && npm install && npm run build`（或 `npm run watch:js` / `watch:css` 热构建）
+- Docker 部署：`Dockerfile` 已含 Node 多阶段构建，无需本地预装 Node 即可产出最新前端
 
 ## API 概览
 
