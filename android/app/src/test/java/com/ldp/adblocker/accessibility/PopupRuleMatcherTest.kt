@@ -41,4 +41,25 @@ class PopupRuleMatcherTest {
         // 文案空、且该规则无 viewIdRegex —— 不命中
         assertNull(matcher.match("com.any.app", "", ""))
     }
+
+    @Test
+    fun invalidRegexRuleIsSkippedOthersStillWork() {
+        // 单条非法正则应被跳过，不影响其余规则匹配
+        val mixed = listOf(
+            PopupRuleEntity(1, "*", "跳过", "skip", true),
+            PopupRuleEntity(2, "*", "([非法", "close", true), // 无法编译的正则
+        )
+        val m = PopupRuleMatcher(mixed)
+        assertNotNull(m.match("com.any.app", "跳过", ""))
+        assertNull(m.match("com.any.app", "立即购买", ""))
+    }
+
+    @Test
+    fun noMatchWhenPackageNameDiffers() {
+        // 指定包名的规则只对对应包名生效
+        val pkgRules = listOf(PopupRuleEntity(1, "com.special.app", "跳过", null, true))
+        val m = PopupRuleMatcher(pkgRules)
+        assertNotNull(m.match("com.special.app", "跳过", ""))
+        assertNull(m.match("com.other.app", "跳过", ""))
+    }
 }

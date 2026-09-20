@@ -16,6 +16,8 @@
     </div>
     <div class="flex-none flex items-center gap-2 md:gap-3">
       <span class="text-xs text-base-content/60" id="updated" aria-live="polite"></span>
+      <input id="adminKey" type="password" autocomplete="off" placeholder="管理密钥（写操作需要）"
+             aria-label="管理密钥" class="input input-bordered input-sm w-44" />
       <button id="refresh" type="button" class="btn btn-primary btn-sm gap-1">⟳ 刷新</button>
       <div class="badge badge-outline gap-2 py-3" role="status">
         <span id="dot" class="inline-block w-2.5 h-2.5 rounded-full bg-warning"></span>
@@ -26,6 +28,7 @@
 
   <main class="p-4 md:p-6 max-w-7xl mx-auto space-y-4">
     <div id="error" class="alert alert-error hidden"></div>
+    <div id="success" class="alert alert-success hidden"></div>
 
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-label="概览统计">
       <div class="stats bg-base-100 shadow">
@@ -54,19 +57,62 @@
       </div>
     </section>
 
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4" aria-label="拦截统计看板">
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-base">Top 被拦截域名</h2>
+          <div class="overflow-x-auto">
+            <table class="table table-sm">
+              <thead>
+                <tr><th>#</th><th>域名</th><th></th><th class="text-right">命中次数</th></tr>
+              </thead>
+              <tbody id="topDomains"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-base">近 7 日拦截趋势</h2>
+          <div class="overflow-x-auto">
+            <table class="table table-sm">
+              <thead>
+                <tr><th>日期</th><th></th><th class="text-right">拦截请求</th><th class="text-right">关弹窗</th></tr>
+              </thead>
+              <tbody id="daily"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div class="card bg-base-100 shadow">
         <div class="card-body">
-          <h2 class="card-title text-base">弹窗自动关闭规则</h2>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="card-title text-base">弹窗自动关闭规则</h2>
+            <div class="flex items-center gap-2">
+              <input id="ruleQ" type="search" class="input input-bordered input-sm w-44"
+                     placeholder="筛选包名（* 为通用）" aria-label="按包名筛选规则" />
+              <button id="newRule" type="button" class="btn btn-primary btn-sm gap-1">＋ 新增规则</button>
+            </div>
+          </div>
           <div class="overflow-x-auto">
             <table class="table table-zebra table-sm">
               <thead>
-                <tr><th>ID</th><th>包名</th><th>按钮文案</th><th>ViewId</th></tr>
+                <tr>
+                  <th>ID</th><th>包名</th><th>按钮文案</th><th>ViewId</th>
+                  <th>状态</th><th class="text-right">操作</th>
+                </tr>
               </thead>
               <tbody id="rules"></tbody>
             </table>
           </div>
-          <p class="text-xs text-base-content/60 mt-2">客户端无障碍服务按这些正则点击「跳过 / 关闭」按钮。</p>
+          <p class="text-xs text-base-content/60 mt-2">
+            客户端无障碍服务按这些正则点击「跳过 / 关闭」按钮；
+            文案与 ViewId 命中其一即可（OR），包名精确匹配或为 * 通配。
+            写操作需在右上角填写管理密钥（仅存于页面内存，不落盘）。
+          </p>
         </div>
       </div>
       <div class="card bg-base-100 shadow">
@@ -93,6 +139,55 @@
       健康检查：<a class="link link-hover" href="/health">/health</a> · 每 30 秒自动刷新
     </p>
   </main>
+
+  <!-- 规则编辑弹窗 -->
+  <dialog id="ruleDialog" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg" id="ruleDialogTitle">新增规则</h3>
+      <form id="ruleForm" class="mt-4 space-y-3" novalidate>
+        <input type="hidden" id="fId" />
+        <div class="form-control">
+          <label class="label" for="fPackage"><span class="label-text">包名（* 为通配）</span></label>
+          <input id="fPackage" name="package_name" class="input input-bordered input-sm"
+                 placeholder="例如 com.example.app 或 *" required />
+        </div>
+        <div class="form-control">
+          <label class="label" for="fText"><span class="label-text">按钮文案正则</span></label>
+          <input id="fText" name="button_text_regex" class="input input-bordered input-sm"
+                 placeholder="例如 跳过|跳过广告|跳过 ?\d+s" required />
+        </div>
+        <div class="form-control">
+          <label class="label" for="fViewId"><span class="label-text">ViewId 正则（可选）</span></label>
+          <input id="fViewId" name="view_id_regex" class="input input-bordered input-sm"
+                 placeholder="例如 skip|close" />
+        </div>
+        <div class="form-control">
+          <label class="label cursor-pointer justify-start gap-2">
+            <input id="fEnabled" type="checkbox" class="toggle toggle-sm toggle-primary" checked />
+            <span class="label-text">启用</span>
+          </label>
+        </div>
+        <div class="modal-action">
+          <button type="button" id="ruleCancel" class="btn btn-ghost btn-sm">取消</button>
+          <button type="submit" id="ruleSave" class="btn btn-primary btn-sm">保存</button>
+        </div>
+      </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>关闭</button></form>
+  </dialog>
+
+  <!-- 删除确认弹窗 -->
+  <dialog id="deleteDialog" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">删除规则</h3>
+      <p class="py-3" id="deleteHint"></p>
+      <div class="modal-action">
+        <button type="button" id="deleteCancel" class="btn btn-ghost btn-sm">取消</button>
+        <button type="button" id="deleteConfirm" class="btn btn-error btn-sm">确认删除</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>关闭</button></form>
+  </dialog>
 
   <noscript><p class="p-6">此页面需要启用 JavaScript 才能加载实时数据。</p></noscript>
   <script src="/static/app.js" defer></script>

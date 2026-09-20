@@ -37,5 +37,8 @@ python run.py                   # 或 uvicorn app.main:app --reload
 | GET | `/api/v1/rules/version` | 规则版本号与条目数 |
 | POST | `/api/v1/stats/intercept` | 上报拦截统计 |
 | GET | `/api/v1/stats/summary?device_id=` | 设备拦截汇总 |
+| GET | `/api/v1/stats/overview` | 全局聚合（活跃设备/拦截域名/关弹窗） |
+| GET | `/api/v1/stats/top-domains?limit=` | 被拦截域名命中排行 |
+| GET | `/api/v1/stats/daily?days=` | 近 N 日拦截趋势 |
 
 定时任务每 6 小时从公开规则源同步广告域名。

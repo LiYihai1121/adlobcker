@@ -9,8 +9,8 @@ import com.ldp.adblocker.data.RulesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 /**
  * 无障碍弹窗关闭服务。
@@ -31,19 +31,23 @@ class PopupAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        loadRules()
+        observeRules()
     }
 
-    private fun loadRules() {
-        try {
-            val rules = runBlocking {
-                AdBlockDatabase.get(this@PopupAccessibilityService).popupRuleDao().allRules()
-            }
-            matcher = PopupRuleMatcher(rules)
-            Log.i(TAG, "已加载 ${rules.size} 条弹窗规则")
-        } catch (e: Exception) {
-            Log.e(TAG, "加载弹窗规则失败", e)
+    /** 观察本地弹窗规则变化（同步成功即更新运行中的匹配器）。 */
+    private fun observeRules() {
+        scope.launch {
+            AdBlockDatabase.get(this@PopupAccessibilityService).popupRuleDao().observeAll()
+                .collect { rules ->
+                    matcher = PopupRuleMatcher(rules)
+                    Log.i(TAG, "已加载 ${rules.size} 条弹窗规则（运行中可热更新）")
+                }
         }
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {

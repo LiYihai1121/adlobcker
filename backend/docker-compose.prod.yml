@@ -1,0 +1,54 @@
+# 生产部署：Caddy 反向代理 + 自动 HTTPS 证书（Let's Encrypt）。
+# 前置条件：公网域名 DNS 已解析到本机，80/443 端口对外开放。
+# 启动：
+#   cp .env.example .env.prod    # 设置 ADBLOCK_ADMIN_KEY（必填）
+#   docker compose -f docker-compose.prod.yml up -d --build
+services:
+  adblocker-backend:
+    build: .
+    image: adblocker-backend:prod
+    container_name: adblocker-backend-prod
+    restart: unless-stopped
+    # 仅容器网络内部可达，不直接暴露端口；由 Caddy 代理
+    expose:
+      - "8000"
+    volumes:
+      - ./data:/app/data        # SQLite 持久化（勿删）
+    env_file:
+      - path: .env.prod
+        required: true
+    environment:
+      - ADBLOCK_ENVIRONMENT=production
+      # 密钥必须由 .env.prod 提供；缺失时应用启动即失败（settings 校验），不会无鉴权上线
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=5).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    networks:
+      - adblocker
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: adblocker-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data        # 证书持久化
+      - caddy_config:/config
+    depends_on:
+      - adblocker-backend
+    networks:
+      - adblocker
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  adblocker:
+    driver: bridge

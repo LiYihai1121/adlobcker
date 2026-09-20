@@ -4,6 +4,10 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+// release 构建的后端地址：-PbackendBaseUrl=https://your.domain/（须为 https 且以 / 结尾）
+val backendBaseUrl: String = (findProperty("backendBaseUrl") as String?)?.trim().orEmpty()
+val releaseRequested: Boolean = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+
 android {
     namespace = "com.ldp.adblocker"
     compileSdk = 34
@@ -17,12 +21,33 @@ android {
     }
 
     buildTypes {
+        debug {
+            // 模拟器访问宿主机后端（真机调试请改为后端所在局域网 IP，或用 https 后端）
+            buildConfigField("String", "BACKEND_BASE_URL", "\"http://10.0.2.2:8000/\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (releaseRequested && backendBaseUrl.isBlank()) {
+                throw GradleException(
+                    "release 构建缺少后端地址：请传入 -PbackendBaseUrl=https://your.domain/（必须为 https 且以 / 结尾）"
+                )
+            }
+            if (backendBaseUrl.isNotBlank()) {
+                if (!backendBaseUrl.startsWith("https://")) {
+                    throw GradleException("backendBaseUrl 必须是 https:// 地址，当前值: $backendBaseUrl")
+                }
+                if (!backendBaseUrl.endsWith("/")) {
+                    throw GradleException("backendBaseUrl 必须以 / 结尾，当前值: $backendBaseUrl")
+                }
+                buildConfigField("String", "BACKEND_BASE_URL", "\"$backendBaseUrl\"")
+            } else {
+                // 仅构建 debug 时允许为空，运行时由 BackendApi 给出清晰错误
+                buildConfigField("String", "BACKEND_BASE_URL", "\"\"")
+            }
         }
     }
     compileOptions {
@@ -30,7 +55,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { viewBinding = true }
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
+    }
     testOptions { unitTests { isReturnDefaultValues = true } }
 }
 

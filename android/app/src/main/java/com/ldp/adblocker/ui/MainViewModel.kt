@@ -51,13 +51,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    /** 将本地累计统计上报到后端（尽力而为，失败静默不阻塞主流程）。 */
+    /** 将本地增量统计上报到后端（尽力而为，失败静默不阻塞主流程，下次重发）。 */
     fun flushStats() {
         viewModelScope.launch {
-            val popups = repo.getPopupsCount()
-            if (popups > 0) {
-                repo.reportStats(interceptedDomains = emptyList(), closedPopups = popups.toInt())
-            }
+            repo.flushPendingStats()
         }
     }
 
@@ -77,18 +74,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    /** 加载规则版本、数量等信息。 */
+    /** 加载本地已同步的规则版本与条目数（不把远程版本误报为本地）。 */
     private fun loadRulesInfo() {
         viewModelScope.launch {
-            val version = repo.fetchRulesVersion()
-            version?.let { v ->
-                _state.value = _state.value.copy(
-                    rulesVersion = v.rulesVersion,
-                    domainsCount = v.domainsCount,
-                    popupRulesCount = v.popupRulesCount,
-                    lastSyncTime = System.currentTimeMillis()
-                )
-            }
+            val (domains, popups) = repo.localCounts()
+            val synced = repo.localRulesVersion()
+            _state.value = _state.value.copy(
+                rulesVersion = synced,
+                domainsCount = domains,
+                popupRulesCount = popups,
+                lastSyncTime = if (synced > 0) System.currentTimeMillis() else 0L
+            )
         }
     }
 

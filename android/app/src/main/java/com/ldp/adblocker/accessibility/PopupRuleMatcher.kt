@@ -20,14 +20,19 @@ class PopupRuleMatcher(private val rules: List<PopupRuleEntity>) {
         val idPattern: Pattern?,
     )
 
-    private val compiled: List<Compiled> = rules.map { r ->
-        Compiled(
-            rule = r,
-            textPattern = Pattern.compile(r.buttonTextRegex, Pattern.CASE_INSENSITIVE),
-            idPattern = r.viewIdRegex?.takeIf { it.isNotBlank() }?.let {
-                Pattern.compile(it, Pattern.CASE_INSENSITIVE)
-            },
-        )
+    private val compiled: List<Compiled> = buildList {
+        for (r in rules) {
+            try {
+                val textPattern = Pattern.compile(r.buttonTextRegex, Pattern.CASE_INSENSITIVE)
+                val idPattern = r.viewIdRegex?.takeIf { it.isNotBlank() }?.let {
+                    Pattern.compile(it, Pattern.CASE_INSENSITIVE)
+                }
+                add(Compiled(rule = r, textPattern = textPattern, idPattern = idPattern))
+            } catch (e: Exception) {
+                // 单条规则正则非法时跳过，避免整批规则失效
+                Log.w(TAG, "跳过正则非法的规则 #${r.id}: ${r.buttonTextRegex}", e)
+            }
+        }
     }
 
     /**

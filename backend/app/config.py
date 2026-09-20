@@ -6,11 +6,21 @@ DB_PATH = settings.db_path
 
 # 远程规则源（公开的广告域名拦截列表，调度器定期同步）
 REMOTE_DOMAIN_SOURCES = [
-    # 国内常见广告 SDK 域名（穿山甲、优量汇、快手联盟、百青藤等）
+    # 国内常见广告/骚扰拦截列表（EasyList 语法 + hosts）
     "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt",
 ]
 
-# 内置的国内主流广告 SDK 域名种子库（用于首次启动初始化）
+# 种子域名核验来源与日期（仅收录下列公开列表中出现过的广告 SDK 域名）
+# - AdGuard DNS Filter: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt （核验 2026-09-19）
+# - cjx-annoyance: https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt
+SEED_SOURCES = [
+    "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt (2026-09-19)",
+    "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt",
+]
+
+# 内置的国内主流广告 SDK 域名种子库（用于首次启动初始化）。
+# 说明：宽泛业务根域（如 amap.com / qzs.qq.com / umeng.com）会造成误伤，
+# 不再默认加入新库；已有库中的旧条目保留，由管理员自行禁用或删除。
 BUILTIN_AD_DOMAINS: list[str] = [
     # 穿山甲（字节跳动）
     "pangolin-sdk.com",
@@ -21,6 +31,12 @@ BUILTIN_AD_DOMAINS: list[str] = [
     "ad.oceanengine.com",
     "log.snssdk.com",
     "ad.tiktok.com",
+    # 穿山甲海外 Pangle / 字节域名（AdGuard DNS Filter 核验）
+    "pangle.io",
+    "tiktokpangle.us",
+    "tiktokpangle-cdn-us.com",
+    "isnssdk.com",
+    "sgsnssdk.com",
     # 优量汇（腾讯广告）
     "gdt.qq.com",
     "mi.gdt.qq.com",
@@ -28,7 +44,8 @@ BUILTIN_AD_DOMAINS: list[str] = [
     "t.gdt.qq.com",
     "pgdt.3g.qq.com",
     "adqq.com",
-    "qzs.qq.com",
+    # 优量汇（腾讯广告）图床/CDN（AdGuard DNS Filter 核验）
+    "pgdt.gtimg.cn",
     # 快手联盟
     "e.kuaishou.com",
     "ssp.ksadx.com",
@@ -39,7 +56,7 @@ BUILTIN_AD_DOMAINS: list[str] = [
     "cpro.baidu.com",
     "mobads.baidu.com",
     "afd.baidu.com",
-    # 其它常见广告/统计联盟
+    # 其它常见广告/统计联盟（国内）
     "adview.cn",
     "admaster.com.cn",
     "adcdn.com",
@@ -49,9 +66,6 @@ BUILTIN_AD_DOMAINS: list[str] = [
     "inmobisdk.com",
     "miaozhen.com",
     "irs01.com",
-    "umeng.com",
-    "umeng.co",
-    "umengcloud.com",
     "youmi.net",
     "adcdn.com.cn",
     "dianru.com",
@@ -63,8 +77,19 @@ BUILTIN_AD_DOMAINS: list[str] = [
     "yoyi.com.cn",
     "iyioyo.com",
     "tanx.com",
-    "amap.com",
     "dianru.cn",
+    # 国际广告 SDK（AdGuard DNS Filter 核验 2026-09-19）
+    "adcolony.com",
+    "applovin.com",
+    "chartboost.com",
+    "mintegral.com",
+    "sigmob.cn",
+    "tapjoy.com",
+    "tapjoyads.com",
+    "vungle.com",
+    "unityads.unity3d.com",
+    "inmobi.net",
+    "inmobicdn.net",
 ]
 
 # 弹窗关闭按钮的通用文案正则（中文 APP 常见"跳过/关闭/广告"等）

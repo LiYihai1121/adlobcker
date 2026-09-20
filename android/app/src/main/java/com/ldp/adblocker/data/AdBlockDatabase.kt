@@ -43,6 +43,9 @@ interface AdDomainDao {
     @Query("SELECT domain FROM ad_domains WHERE enabled=1")
     suspend fun allDomains(): List<String>
 
+    @Query("SELECT COUNT(*) FROM ad_domains WHERE enabled=1")
+    suspend fun count(): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(domains: List<AdDomainEntity>)
 
@@ -57,6 +60,9 @@ interface PopupRuleDao {
 
     @Query("SELECT * FROM popup_rules WHERE enabled=1")
     suspend fun allRules(): List<PopupRuleEntity>
+
+    @Query("SELECT COUNT(*) FROM popup_rules WHERE enabled=1")
+    suspend fun count(): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(rules: List<PopupRuleEntity>)

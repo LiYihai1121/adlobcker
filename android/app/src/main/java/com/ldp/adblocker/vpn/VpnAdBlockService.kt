@@ -96,6 +96,8 @@ class VpnAdBlockService : VpnService() {
                             }
                         }
                         Log.d(TAG, "拦截广告域名: ${result.domain}")
+                        // 记入内存缓冲，待回前台时随统计上报后端（域名明细）
+                        com.ldp.adblocker.data.BlockedDomainBuffer.record(result.domain)
                         scope.launch {
                             repo.incrementDomainsCount(1)
                         }

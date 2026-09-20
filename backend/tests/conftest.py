@@ -1,6 +1,13 @@
 """pytest 公共 fixture：每个测试用独立的临时 SQLite 数据库，互不干扰。"""
+import os
+
 import pytest
 import pytest_asyncio
+
+# 测试隔离：在任何 app 模块导入前覆盖真实 .env 配置，
+# 强制以开发模式、空管理密钥运行，避免本机 .env 影响测试结果。
+os.environ["ADBLOCK_ENVIRONMENT"] = "development"
+os.environ["ADBLOCK_ADMIN_KEY"] = ""
 
 
 def _patch_db_path(monkeypatch, db_file: str) -> None:
