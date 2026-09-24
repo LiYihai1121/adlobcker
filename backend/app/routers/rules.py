@@ -28,7 +28,7 @@ async def get_rules_snapshot(enabled_only: bool = True):
             dsql += " ORDER BY platform, domain"
             drows = await (await db.execute(dsql)).fetchall()
 
-            psql = ("SELECT id, package_name, button_text_regex, view_id_regex, enabled "
+            psql = ("SELECT id, package_name, button_text_regex, view_id_regex, enabled, source "
                     "FROM popup_rules")
             if enabled_only:
                 psql += " WHERE enabled=1"
@@ -46,5 +46,6 @@ async def get_rules_snapshot(enabled_only: bool = True):
         popup_rules=[PopupRule(id=r["id"], package_name=r["package_name"],
                                button_text_regex=r["button_text_regex"],
                                view_id_regex=r["view_id_regex"],
-                               enabled=bool(r["enabled"])) for r in prows],
+                               enabled=bool(r["enabled"]),
+                               source=r["source"]) for r in prows],
     )

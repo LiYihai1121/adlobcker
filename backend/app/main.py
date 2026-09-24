@@ -10,7 +10,8 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.database import init_db
-from app.scheduler import start_scheduler, stop_scheduler, sync_remote_domains
+from app.scheduler import (start_scheduler, stop_scheduler,
+                           sync_gkd_rules, sync_remote_domains)
 from app.settings import settings
 from app.routers import domains, popup_rules, rules, stats
 
@@ -29,6 +30,7 @@ async def lifespan(app: FastAPI):
         # 启动时立即触发一次远程同步（不阻塞启动）
         import asyncio
         asyncio.create_task(sync_remote_domains())
+        asyncio.create_task(sync_gkd_rules())
     yield
     await stop_scheduler()
 

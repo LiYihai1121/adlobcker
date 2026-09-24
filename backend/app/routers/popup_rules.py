@@ -16,7 +16,7 @@ async def list_popup_rules(enabled_only: bool = True, package_name: str | None =
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         sql = (
-            "SELECT id, package_name, button_text_regex, view_id_regex, enabled "
+            "SELECT id, package_name, button_text_regex, view_id_regex, enabled, source "
             "FROM popup_rules"
         )
         conds: list[str] = []
@@ -35,6 +35,7 @@ async def list_popup_rules(enabled_only: bool = True, package_name: str | None =
             id=r["id"], package_name=r["package_name"],
             button_text_regex=r["button_text_regex"],
             view_id_regex=r["view_id_regex"], enabled=bool(r["enabled"]),
+            source=r["source"],
         ) for r in items]
 
 

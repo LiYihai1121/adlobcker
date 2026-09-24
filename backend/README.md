@@ -41,4 +41,14 @@ python run.py                   # 或 uvicorn app.main:app --reload
 | GET | `/api/v1/stats/top-domains?limit=` | 被拦截域名命中排行 |
 | GET | `/api/v1/stats/daily?days=` | 近 N 日拦截趋势 |
 
-定时任务每 6 小时从公开规则源同步广告域名。
+定时任务每 6 小时从公开规则源同步广告域名，并从 GKD 订阅源（`app/config.py` 中
+`GKD_SUBSCRIPTION_SOURCES`）下载订阅、降级转换为弹窗规则（`app/gkd_convert.py`）：
+
+- 仅转换简单选择器（`text/desc`/`vid/id` 字面量匹配），含层级组合符、多步
+  `preKeys` 的复杂规则自动跳过；订阅中默认禁用的应用/分组/规则不导入；
+- 转换结果写入 `popup_rules`（`source='gkd'`），每次同步对该来源全量替换，
+  手工（`manual`）与内置（`builtin`）规则不受影响；
+- 规则集有实际变化才自增规则版本号；全部订阅源失败时保留现有规则不清空。
+
+> 注意：手工编辑/删除 `source='gkd'` 的规则会在下一次订阅同步时被覆盖/复活，
+> 订阅规则请通过订阅源管理。

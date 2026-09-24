@@ -10,6 +10,15 @@ REMOTE_DOMAIN_SOURCES = [
     "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt",
 ]
 
+# GKD 订阅源（JSON5 格式），定时下载并降级转换为 popup_rules（source='gkd'）。
+# 轻量版只转换简单选择器规则（text/desc/vid/id 字面量），复杂规则自动跳过。
+GKD_SUBSCRIPTION_SOURCES = [
+    # GKD 官方默认订阅（npm 镜像分发）
+    "https://registry.npmmirror.com/@gkd-kit/subscription/latest/files/dist/gkd.json5",
+    # AIsouler 精选订阅（已停更，但仍是最全的规则集）
+    "https://raw.githubusercontent.com/AIsouler/GKD_subscription/main/dist/AIsouler_gkd.json5",
+]
+
 # 种子域名核验来源与日期（仅收录下列公开列表中出现过的广告 SDK 域名）
 # - AdGuard DNS Filter: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt （核验 2026-09-19）
 # - cjx-annoyance: https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt

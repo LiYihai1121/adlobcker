@@ -14,6 +14,8 @@ class PopupRule(BaseModel):
     button_text_regex: str
     view_id_regex: str | None = None
     enabled: bool = True
+    # 规则来源：manual 管理端手工 / builtin 内置种子 / gkd 订阅转换
+    source: str = "manual"
 
 
 class PopupRuleWrite(BaseModel):

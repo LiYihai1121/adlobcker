@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS popup_rules (
     button_text_regex TEXT NOT NULL, -- 按钮文案正则
     view_id_regex TEXT,             -- viewId 正则
     enabled INTEGER DEFAULT 1,
+    source TEXT NOT NULL DEFAULT 'manual',  -- manual 管理端 / builtin 内置种子 / gkd 订阅转换
     updated_at TEXT DEFAULT (datetime('now','localtime'))
 );
 
@@ -75,11 +76,20 @@ async def _seed(db: aiosqlite.Connection) -> None:
 
     for rule in BUILTIN_POPUP_RULES:
         await db.execute(
-            "INSERT INTO popup_rules(id, package_name, button_text_regex, view_id_regex, enabled) "
-            "VALUES(?, ?, ?, ?, ?) "
+            "INSERT INTO popup_rules(id, package_name, button_text_regex, view_id_regex, enabled, source) "
+            "VALUES(?, ?, ?, ?, ?, 'builtin') "
             "ON CONFLICT(id) DO NOTHING",
             (rule["id"], rule["package_name"], rule["button_text_regex"],
              rule["view_id_regex"], int(rule["enabled"])),
+        )
+
+
+async def _migrate_popup_rules_source(db: aiosqlite.Connection) -> None:
+    """为旧库补充 popup_rules.source 列（幂等，已有列则跳过）。"""
+    cols = await (await db.execute("PRAGMA table_info(popup_rules)")).fetchall()
+    if all(c["name"] != "source" for c in cols):
+        await db.execute(
+            "ALTER TABLE popup_rules ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'"
         )
 
 
@@ -88,6 +98,7 @@ async def init_db() -> None:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         await db.executescript(SCHEMA)
+        await _migrate_popup_rules_source(db)
 
         # 写入初始规则版本（若已存在则保留，不覆盖）
         await db.execute(

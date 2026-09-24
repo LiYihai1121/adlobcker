@@ -15,6 +15,7 @@ interface PopupRule {
   button_text_regex: string;
   view_id_regex: string | null;
   enabled: boolean;
+  source: string;
 }
 interface PopupRuleWrite {
   id?: number;
@@ -208,6 +209,12 @@ function renderPopupRules(): void {
   const filtered = q
     ? allRules.filter((r) => r.package_name.includes(q))
     : allRules;
+  const sourceBadge = (r: PopupRule): string =>
+    r.source === "gkd"
+      ? ' <span class="badge badge-info badge-xs">订阅</span>'
+      : r.source === "builtin"
+        ? ' <span class="badge badge-ghost badge-xs">内置</span>'
+        : "";
   $("rules").innerHTML =
     filtered
       .map(
@@ -216,6 +223,7 @@ function renderPopupRules(): void {
           `<td>${r.id}</td>` +
           `<td class="font-mono text-xs">${escapeHtml(r.package_name)}` +
           (r.package_name === "*" ? ' <span class="badge badge-ghost badge-xs">通用</span>' : "") +
+          sourceBadge(r) +
           `</td>` +
           `<td><code class="text-xs break-all">${escapeHtml(r.button_text_regex)}</code></td>` +
           `<td class="font-mono text-xs">${escapeHtml(r.view_id_regex) || "—"}</td>` +

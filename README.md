@@ -22,8 +22,9 @@ adlobcker/
     │   ├── routers/                     # domains / popup_rules / rules / stats
     │   ├── auth.py                      # 管理 API 鉴权（X-Admin-Key）
     │   ├── settings.py                  # Pydantic-Settings 配置（含生产密钥校验）
-    │   ├── config.py                    # 内置广告域名种子库 + 远程同步源
+    │   ├── config.py                    # 内置广告域名种子库 + 远程同步源 + GKD 订阅源
     │   ├── domain_rules.py              # 域名规范化 / 拦截列表行解析（EasyList+hosts）
+    │   ├── gkd_convert.py               # GKD 订阅（JSON5）→ 弹窗规则降级转换
     │   ├── database.py                  # SQLite 初始化 + 规则版本管理
     │   ├── scheduler.py                 # 定时同步远程规则
     │   └── main.py
@@ -60,6 +61,7 @@ adlobcker/
 - **CORS** 与 **Pydantic-Settings** 配置，支持 `.env` / 环境变量覆盖
 - 内置穿山甲/优量汇/快手联盟/百青藤等国内主流广告 SDK 域名种子库，并补充经 AdGuard DNS Filter 核验的国际 SDK（AppLovin/Chartboost/AdColony 等）；宽泛业务根域（如 amap.com / umeng.com）不入库以免误伤
 - `apscheduler` 每 6 小时从公开广告拦截列表同步更新，**有新增才自增规则版本号**
+- **GKD 订阅集成（轻量版）**：定时下载 GKD 订阅（官方默认订阅 + AIsouler 精选），由 `gkd_convert.py` 把简单选择器（text/desc/vid/id 字面量）降级转换为现有弹窗规则格式写入 `popup_rules`（`source='gkd'`，按来源全量替换，手工/内置规则不受影响），复杂选择器与订阅默认禁用项自动跳过；Android 端零改动直接受益
 
 ## 运行
 
@@ -120,8 +122,9 @@ python run.py
 ```bash
 cd backend
 pip install -r requirements.txt
-python -m pytest -v        # 31 个测试：健康/版本/域名CRUD/规则CRUD/快照/统计/鉴权
+python -m pytest -v        # 39 个测试：健康/版本/域名CRUD/规则CRUD/快照/统计/鉴权
                            # + Top域名/每日趋势 + 域名规范化(domain_rules)
+                           # + GKD 订阅转换与同步（gkd_convert/scheduler）
                            # + Settings 环境变量与生产校验
 ```
 
@@ -176,7 +179,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ## 项目状态
 
-- ✅ 后端：配置层(CORS/Settings/.env)、生产密钥校验、规则版本动态自增、snapshot/overview、域名规范化、admin 鉴权、Docker 多阶段构建(含前端)、31 个 pytest 全部通过
+- ✅ 后端：配置层(CORS/Settings/.env)、生产密钥校验、规则版本动态自增、snapshot/overview、域名规范化、admin 鉴权、Docker 多阶段构建(含前端)、GKD 订阅降级转换与定时同步、39 个 pytest 全部通过
 - ✅ 前端：TypeScript+Tailwind/DaisyUI 控制台，支持弹窗规则增删改与包名筛选、密钥内存态；拦截统计看板（Top 域名排行 + 近 7 日趋势条形图）；源码与构建产物均已纳入版本库；CI 校验 `npm run build`
 - ✅ 数据库：SQLite，种子数据由代码初始化（含 AdGuard 核验的国际 SDK 域名），`backend/data/` 目录随仓库占位存在
 - ✅ 部署：开发 `docker compose up -d --build` 一键拉起；生产 `docker-compose.prod.yml` + Caddy 自动 HTTPS
